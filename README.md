@@ -1,83 +1,106 @@
-# Dota 2 Surgical VPK Cleaner (Ardysa Mods Edition)
+# 🎮 ArdysaMods — Инструкция и инструментарий к мод-паку Dota 2
 
-Инструмент для выборочной пересборки VPK-архивов Dota 2. Он берёт оригинальный `pak01_dir_original.vpk`, читает `vpk_mod_config.json`, строит чистое filtered-дерево с активными героями, затем пакует новый `pak01_dir.vpk`. Оптимизировано для работы с экосистемой **Ardysa Mods**.
+[![Dota 2](https://img.shields.io/badge/Game-Dota%202-red.svg?style=for-the-badge&logo=dota2)](https://www.dota2.com/)
+[![ArdysaModsTools](https://img.shields.io/badge/Launcher-ArdysaModsTools-blue.svg?style=for-the-badge&logo=github)](https://github.com/Anneardysa/ArdysaModsTools)
+[![PowerShell](https://img.shields.io/badge/Shell-PowerShell%207%20%2F%205.1-blue.svg?style=for-the-badge&logo=powershell)](https://github.com/PowerShell/PowerShell)
+[![VPKEdit](https://img.shields.io/badge/CLI-VPKEdit%20CLI-orange.svg?style=for-the-badge)](https://github.com/craftablescience/VPKEdit)
+[![Status](https://img.shields.io/badge/Status-Active%20%26%20Tested-brightgreen.svg?style=for-the-badge)]()
 
-## Основные возможности
-- **Config-driven фильтрация:** список активных героев берётся из `vpk_mod_config.json`.
-- **Strict active roster:** если героя нет в `active_roster`, его hero/item/material/particle ассеты не должны попадать в итоговый VPK.
-- **Безопасная пересборка:** исходный экстракт не чистится на месте; новый VPK собирается из отдельной filtered-папки.
-- **Сохранение окружения:** Полная поддержка кастомных ландшафтов, вышек, HUD и музыки.
-- **Поддержка Аркан:** Специальные алгоритмы для сохранения сложных сетов (например, Аркана-куб на Ио).
-- **Проверяемость:** после упаковки VPK можно проверить через `vpkeditcli --verify-checksums all`.
-- **Совместимость:** Не совсем идеально работает с [ArdysaModsTools](https://github.com/Anneardysa/ArdysaModsTools). Некоторые герои остаются без сетов, но с эффектами от иморталок.
+Комплексный проект документации, эталонных пресетов и скриптов автоматизации для работы с экосистемой модов **ArdysaMods** в Dota 2.
 
-## Рабочий процесс
+Репозиторий архитектурно разделён на **два взаимодополняющих модуля**: для обычных игроков и для продвинутых моддеров/разработчиков.
 
-1. Распаковать `pak01_dir_original.vpk` через VPKEdit CLI.
-2. Проверить `vpk_mod_config.json`: `active_roster` задаёт единственный список героев, чьи ассеты должны попасть в VPK.
-3. Построить filtered-дерево:
+---
 
-```powershell
-scripts\build_filtered_tree.ps1 `
-  -SourceRoot <extract>\pak01_dir_original `
-  -DestinationRoot <build>\filtered\pak01_dir `
-  -ConfigPath <project>\vpk_mod_config.json
+## 🧭 Навигация по модулям проекта
+
+```text
+ArdysaMods Toolkit
+├── 📘 МОДУЛЬ 1: Базовое руководство для игроков (ArdysaModsTools)
+│     └── docs/MODULE_1_USAGE_GUIDE.md  (Установка, выбор сетов в UI, ландшафты, re-patch)
+│
+├── ⚙️ МОДУЛЬ 2: Хирургическая оптимизация VPK (VPK Optimizer)
+│     └── docs/MODULE_2_VPK_OPTIMIZER.md (Распаковка, фильтрация ассетов, сжатие с 15 ГБ до <1 ГБ)
+│
+├── 🗂️ СПРАВОЧНИК СТРУКТУРЫ VPK
+│     └── docs/vpk_structure.md (Атлас папок, моделей, частиц, звуков и связей items_game.txt)
+│
+└── 🎛️ ЭТАЛОННЫЕ ПРЕСЕТЫ
+      └── presets/ (MiscPreset.json, skins_preset.json, dota.json)
 ```
 
-4. Упаковать `<build>\filtered\pak01_dir` в `pak01_dir_rebuilt.vpk`.
-5. Проверить checksums.
-6. Сделать backup старого `pak01_dir.vpk`.
-7. Заменить рабочий `pak01_dir.vpk`.
+---
 
-## Важное ограничение `items_game.txt`
+## 📊 Сравнение модулей: какой выбрать?
 
-В Dota косметика не хранится как одна папка героя. Сеты описываются в `scripts/items/items_game.txt`, а сами файлы могут лежать в `models/heroes`, `models/items`, `materials/models/items`, `particles/units/heroes`, `particles/econ/items`, `kisilev_ind`, `8213` и других папках.
+| Критерий | 📘 Модуль 1 (Игровой / UI) | ⚙️ Модуль 2 (Хирургический / VPK) |
+| :--- | :--- | :--- |
+| **Для кого** | Обычные игроки Dota 2 | Моддеры, энтузиасты, слабые ПК |
+| **Инструмент** | Официальный лаунчер **ArdysaModsTools** | Скрипты PowerShell + **VPKEdit CLI** |
+| **Выбор сетов** | Прямо в интерфейсе лаунчера | Физическое удаление файлов из архива |
+| **Сложность** | 🟢 Очень просто (клик по кнопкам) | 🟡 Продвинуто (консоль, скрипты, манифесты) |
+| **Размер VPK** | Полный архив (~12–18 ГБ) | Ультра-легковесный (~300–800 МБ) |
+| **Ручное вырезание файлов** | ❌ **Не требуется** | ✅ Да (через `build_filtered_tree.ps1`) |
+| **Ссылка на гайд** | [**Перейти к Модулю 1 ➔**](./docs/MODULE_1_USAGE_GUIDE.md) | [**Перейти к Модулю 2 ➔**](./docs/MODULE_2_VPK_OPTIMIZER.md) |
 
-Если модовый VPK оставляет общий `scripts/items/items_game.txt`, но удаляет файлы, на которые этот файл ссылается, обычные сеты неактивных героев могут ломаться. Но для этого проекта правило жёсткое: если героя нет в `active_roster`, его ассеты не возвращаются в VPK как compatibility-заплатка.
+---
 
-Текущий безопасный подход:
-- `active_roster` — герои, для которых оставляются активные модовые ассеты.
-- `compat_keep_roster` — диагностический/временный механизм; в финальной lightweight-сборке должен быть пустым, если пользователь явно хочет, чтобы выключенных героев не было в VPK.
+## 🚀 Быстрый старт
 
-Правильный следующий шаг для багов выключенных героев — не возвращать их ассеты, а чистить/адаптировать `items_game.txt` для неактивных героев, чтобы записи снова ссылались на дефолтные ассеты базовой Dota или не применяли модовые `asset_modifier`. Dependency-preserve подходит только для активных героев; для выключенных он нарушает цель lightweight-сборки.
+### Сценарий А: Я просто хочу скины, ландшафт и вышки в игре (Модуль 1)
+1. Скачайте свежий `pak01_dir.vpk` из [Discord Ardysa Mods](https://discord.gg/GXuhAwte) (канал `#update-mods`).
+2. Откройте **ArdysaModsTools** ➔ `Install mod pack` ➔ `Manual install` ➔ укажите `pak01_dir.vpk` ➔ выберите **`Keep original`**.
+3. Выберите нужные сеты героям прямо в интерфейсе лаунчера.
+4. Во вкладке **`MISCELLANEOUS`** выберите ландшафт, вышки, крипов, музыку ➔ `Generate` ➔ `Add to Current Mods`.
+5. Перейдите в **`Patch update`** ➔ `Verify mod file` ➔ `Patch Update`. Запускайте Доту!
+👉 *Полная пошаговая инструкция со скриншотами логики:* [**docs/MODULE_1_USAGE_GUIDE.md**](./docs/MODULE_1_USAGE_GUIDE.md)
 
-Нельзя слепо заменять item-блоки выключенных героев блоками из дефолтной Dota. `items_game.txt` связан с event/econ schema: старые события, эффекты и награды могут ссылаться на конкретные `item_def` / `effects_item_def`. Тестовый sanitize, который заменял блоки без проверки ссылок, ломал запуск Dota на `EVENT_ID_WINTER_MAJOR_2016` с ошибкой `Unable to find effects_item_def 16844`.
+---
 
-Любой production-pass для `items_game.txt` должен сохранять ссылочную целостность: перед заменой или удалением блока нужно проверить все ссылки на его id внутри `items_game.txt`, включая `event_id`, `effects_item_def`, bundles, styles, asset modifiers и другие econ-секции.
+### Сценарий Б: Мне нужно уменьшить вес мода и вырезать лишних героев (Модуль 2)
+> 💡 *Внимание: в актуальном лаунчере сеты уже настраиваются в UI. Вырезать файлы вручную нужно только если вы хотите сэкономить место на SSD или создать свой легковесный пак.*
 
-## Что уже проверено и нельзя повторять
+1. Распакуйте `pak01_dir_original.vpk` с помощью `vpkeditcli`.
+2. Задайте список активных героев в `vpk_mod_config.json` (`active_roster`).
+3. Запустите скрипт безопасной фильтрации:
+   ```powershell
+   scripts\build_filtered_tree.ps1 -SourceRoot .\source -DestinationRoot .\filtered -ConfigPath .\vpk_mod_config.json
+   ```
+4. Упакуйте `filtered` обратно в `pak01_dir.vpk` и проверьте контрольные суммы:
+   ```powershell
+   vpkeditcli pak01_dir.vpk --verify-checksums all
+   ```
+5. Установите полученный архив через ArdysaModsTools.
+👉 *Полное техническое руководство и защита `items_game.txt`:* [**docs/MODULE_2_VPK_OPTIMIZER.md**](./docs/MODULE_2_VPK_OPTIMIZER.md)
 
-В ходе тестов были пройдены несколько подходов:
+---
 
-- **Возврат ассетов выключенных героев через `compat_keep_roster`:** технически может чинить обычные сеты Lion/Bounty Hunter, но нарушает strict lightweight-цель. Если героя нет в `active_roster`, его ассеты не должны попадать в итоговый VPK.
-- **Массовый sanitize `items_game.txt`:** замена сотен item-блоков выключенных героев на дефолтные блоки из установленной Dota ломала запуск игры. Ошибка: `EVENT_ID_WINTER_MAJOR_2016` / `Unable to find effects_item_def 16844`.
-- **Малый тест с одним item-блоком Lion (`572`):** игра запускалась, но проблема обычных сетов не решалась полностью: оставались модовые иконки/эффекты и отсутствующие модели.
-- **Тест с полным откатом Lion (`365`, `366`, `369`, `572`) и Bounty Hunter back (`52`):** снова ломал запуск с той же ошибкой `effects_item_def 16844`.
+## 📁 Структура репозитория
 
-Главный вывод: **не заменять item-блоки целиком**, даже если блок выглядит изолированным. Для `items_game.txt` безопаснее оставлять исходный блок на месте и точечно править только визуальные поля, которые ссылаются на удалённые модовые ассеты.
+```text
+├── docs/                               # Документация и руководства
+│   ├── MODULE_1_USAGE_GUIDE.md         # Гайд для обычных игроков (ArdysaModsTools)
+│   ├── MODULE_2_VPK_OPTIMIZER.md       # Руководство по хирургической оптимизации VPK
+│   └── vpk_structure.md                # Справочник внутренней структуры папок VPK
+├── presets/                            # Эталонные файлы конфигурации
+│   ├── MiscPreset.json                 # Пресет карты, вышек, крипов и музыки (MISCELLANEOUS)
+│   ├── skins_preset.json               # Пресет выбранных сетов и Аркан на героев
+│   ├── dota.json                       # Конфигурация лаунчера
+│   ├── vpk_mod_config.template.json    # Шаблон манифеста для сборки легковесного VPK
+│   └── README.md                       # Описание пресетов и инструкция по установке
+├── scripts/                            # Скрипты автоматизации
+│   ├── build_filtered_tree.ps1         # Основной скрипт сборки чистого дерева по манифесту
+│   ├── optimize.ps1                    # Скрипт in-place зачистки каталогов
+│   ├── analyze_items_game_refs.py      # Анализатор связей и целостности items_game.txt
+│   └── sanitize_items_game.py          # Экспериментальный санитайзер schema
+├── README.md                           # Главная страница проекта
+└── SKILL.md                            # Описание навыка для AI-ассистента Antigravity
+```
 
-Следующий допустимый подход для выключенных героев:
+---
 
-- не добавлять hero/item/material/particle ассеты выключенного героя в VPK;
-- не переносить дефолтный item-блок целиком;
-- внутри существующего модового блока заменить только поля путей, например `image_inventory`, `model_player`, `asset_modifier`, `visuals`, `particle`, если они ведут на удалённые модовые файлы;
-- не менять `event_id`, item id, структуру блока, bundle/style/reward/effects связи и служебные econ-поля;
-- после каждого маленького изменения собирать отдельный тестовый VPK, проверять checksum и запуск Dota.
-
-## Интеграция и разработка
-Этот инструмент создан как дополнение к официальной документации [ArdysaMods Developer Docs](https://github.com/Anneardysa/ArdysaModsTools/tree/main/docs/developer). В то время как основной инструментарий фокусируется на установке и управлении модами, данный оптимизатор решает задачу минимизации веса игрового клиента за счет удаления неиспользуемых героев.
-
-## Как пользоваться (для пользователей Antigravity/Gemini)
-Если вы используете ИИ-ассистента Antigravity, просто склонируйте этот репозиторий в папку `skills`:
-1. Скачайте репозиторий.
-2. Поместите папку в `.../.gemini/antigravity/skills/dota-surgical-vpk-optimizer`.
-3. Теперь ваш ИИ-помощник умеет профессионально чистить VPK по вашему запросу.
-
-## Примеры сетов
-Вы можете посмотреть, какие сеты будут отображаться в игре после оптимизации, на официальном сайте модов:
-[ArdysaMods Updates](https://ardysamods.my.id/updates.html)
-
-## Документация и ресурсы
-- [Инструкция по установке](references/installation.md)
-- [Структура VPK](references/vpk_structure.md)
-- [Discord (Ardysa Mods)](https://discord.gg/GXuhAwte) — источник оригинальных VPK-файлов (канал #update-mods).
+## 🌐 Официальные ресурсы
+- [ArdysaModsTools GitHub](https://github.com/Anneardysa/ArdysaModsTools) — официальный лаунчер модов.
+- [Discord (Ardysa Mods)](https://discord.gg/GXuhAwte) — официальное сообщество и свежие VPK (канал #update-mods).
+- [ArdysaMods Updates](https://ardysamods.my.id/updates.html) — витрина обновлений и предпросмотр сетов.
+- [VPKEdit Releases](https://github.com/craftablescience/VPKEdit/releases) — CLI и GUI инструмент для работы с VPK архивами Valve.
