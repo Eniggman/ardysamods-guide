@@ -1,3 +1,5 @@
+> **Версия:** 1.0 • **Последнее обновление:** 2026-09-20
+
 # 🎮 ArdysaMods — Комплексное руководство и инструментарий для модов Dota 2
 
 [![Dota 2](https://img.shields.io/badge/Game-Dota%202-red.svg?style=for-the-badge&logo=dota2)](https://www.dota2.com/)
