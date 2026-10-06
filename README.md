@@ -255,3 +255,9 @@ v1.0 [20.09.26]
 * [Discord Ardysa Mods](https://discord.gg/GXuhAwte) — официальное сообщество (канал `#update-mods`).
 * [ArdysaMods Updates](https://ardysamods.my.id/updates.html) — сайт обновлений и витрина сетов.
 * [VPKEdit Releases](https://github.com/craftablescience/VPKEdit/releases) — GUI и CLI для редактирования VPK архивов.
+
+---
+
+## English summary
+
+A guide and toolkit for Dota 2 cosmetic mods with the ArdysaMods launcher (ArdysaModsTools): installing the mod pack, choosing Arcanas, Personas, hero sets, terrains, towers, creeps and music, and quickly re-patching after Dota 2 updates. A second module explains how to manually remove hero sets from pak01_dir.vpk when the launcher's set selector breaks or a set crashes the game, and how to shrink the VPK using PowerShell, Python and VPKEdit CLI on Windows; ready-made presets are included. The repo ships an AI agent skill (SKILL.md): copy the repository folder into your agent's skills directory (e.g. ~/.claude/skills/) or give SKILL.md to the agent.
